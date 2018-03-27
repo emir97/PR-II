@@ -1,7 +1,7 @@
-﻿#include<iostream>
+#include<iostream>
 #include <conio.h>
 using namespace std;
-char * crt = "\n---------------------------\n";
+const char * crt = "\n---------------------------\n";
 struct Datum {
 	int dan, mjesec, godina;
 };
@@ -31,29 +31,29 @@ int PrikaziMenu() {
 	return izbor;
 }
 /*UKOLIKO SMATRATE DA JE POTREBNO ZADATAK MOZETE PROSIRITI DODATNIM FUNKCIONALNOSTIMA, ALI PROSIRENJA MORAJU PRATITI ADEKVATNI KOMENTARI*/
-void Login(char *valid_pass){
+void Login(char *valid_pass) {
 	char password[100];
 	char znak; int brojac;
-	do{
+	do {
 		brojac = 0;
 		cout << "Unesite vas password -> ";
 		do
 		{
-			znak =  _getch();
-			
-			if ((int)znak != 13){
+			znak = _getch();
+
+			if ((int)znak != 13) {
 				password[brojac++] = znak;
 				cout << "-";
 			}
 		} while ((int)znak != 13);
 		password[brojac] = '\0';
-		if(strcmp(password, valid_pass) != 0){
+		if (strcmp(password, valid_pass) != 0) {
 			system("cls");
 			cout << "Pogresna sifra... Pokusajte ponovo" << endl;
 		}
 	} while (strcmp(valid_pass, password) != 0);
 }
-void DodajStudenta(Student *&student){
+void DodajStudenta(Student *&student) {
 	char temp[100];
 	int ocjena;
 	int broj_predmeta;
@@ -97,11 +97,11 @@ void DodajStudenta(Student *&student){
 		cin.ignore();
 		student->polozeni[i].ocjena = ocjena;
 
-		student->brojPolozenih = broj_predmeta;
 	}
+		student->brojPolozenih = broj_predmeta;
 
 }
-void DodajPolozeniPredmet(Student *studenti[], int max){
+void DodajPolozeniPredmet(Student *studenti[], int max) {
 	char ime_prezime[100];
 	char temp[100];
 	int size, d, m, g, ocjena;
@@ -109,47 +109,47 @@ void DodajPolozeniPredmet(Student *studenti[], int max){
 	cin.getline(ime_prezime, 100);
 	for (int i = 0; i < max; i++)
 	{
-		if (strcmp(studenti[i]->imePrezime, ime_prezime) == 0){
+		if (strcmp(studenti[i]->imePrezime, ime_prezime) == 0) {
 			cout << "Student pronadjen..." << endl;
-		
+
 			cout << "Naziv predmeta -> ";
 			cin.getline(temp, 100);
 			size = strlen(temp) + 1;
-			studenti[i]->polozeni[i].nazivPredmeta = new char[size];
-			strcpy_s(studenti[i]->polozeni[i].nazivPredmeta, size, temp);
+			studenti[i]->polozeni[studenti[i]->brojPolozenih].nazivPredmeta = new char[size];
+			strcpy_s(studenti[i]->polozeni[studenti[i]->brojPolozenih].nazivPredmeta, size, temp);
 
 			cout << "Datum Polaganja -> ";
 			cin >> d >> m >> g;
 			cin.ignore();
-			studenti[i]->polozeni[i].datumPolaganja.dan = d;
-			studenti[i]->polozeni[i].datumPolaganja.mjesec = m;
-			studenti[i]->polozeni[i].datumPolaganja.godina = g;
+			studenti[i]->polozeni[studenti[i]->brojPolozenih].datumPolaganja.dan = d;
+			studenti[i]->polozeni[studenti[i]->brojPolozenih].datumPolaganja.mjesec = m;
+			studenti[i]->polozeni[studenti[i]->brojPolozenih].datumPolaganja.godina = g;
 
 			cout << "Napomena -> ";
 			cin.getline(temp, 100);
 			size = strlen(temp) + 1;
-			studenti[i]->polozeni[i].napomena = new char[size];
-			strcpy_s(studenti[i]->polozeni[i].napomena, size, temp);
+			studenti[i]->polozeni[studenti[i]->brojPolozenih].napomena = new char[size];
+			strcpy_s(studenti[i]->polozeni[studenti[i]->brojPolozenih].napomena, size, temp);
 
 			cout << "Ocjena -> ";
 			cin >> ocjena;
 			cin.ignore();
-			studenti[i]->polozeni[i].ocjena = ocjena;
+			studenti[i]->polozeni[studenti[i]->brojPolozenih].ocjena = ocjena;
 
 			studenti[i]->brojPolozenih++;
 
 		}
 	}
 }
-int PretvoriUDane(Datum d){
+int PretvoriUDane(Datum d) {
 	return d.godina * 365 + d.mjesec * 30 + d.dan;
 }
-void Pretraga(Student *studenti[], int max){
+void Pretraga(Student *studenti[], int max) {
 	int izbor;
 	cout << "Pratraga (1. Datumu polaganja, 2. Napomeni) ->";
 	cin >> izbor;
 	cin.ignore();
-	if (izbor == 1){
+	if (izbor == 1) {
 		int od_d, od_m, od_g;
 		int do_d, do_m, do_g;
 		cout << "Unesite datum od -> ";
@@ -165,19 +165,19 @@ void Pretraga(Student *studenti[], int max){
 		{
 			for (int j = 0; j < studenti[i]->brojPolozenih; j++)
 			{
-				if (PretvoriUDane(OD)<PretvoriUDane(studenti[i]->polozeni[j].datumPolaganja) && PretvoriUDane(DO) > PretvoriUDane(studenti[i]->polozeni[j].datumPolaganja)){
-					
-						float prosjek = 0;
-						for (int k = 0; k < studenti[i]->brojPolozenih; k++)
-						{
-							prosjek = prosjek + studenti[i]->polozeni[k].ocjena;
-						}
-						prosjek = prosjek / studenti[i]->brojPolozenih;
-						cout << j + 1 << " " << studenti[i]->imePrezime << " -> " << studenti[i]->polozeni[j].nazivPredmeta << " (" << studenti[i]->polozeni[j].ocjena << ") " << "prosjek -> " << prosjek << endl;
-					
+				if (PretvoriUDane(OD)<PretvoriUDane(studenti[i]->polozeni[j].datumPolaganja) && PretvoriUDane(DO) > PretvoriUDane(studenti[i]->polozeni[j].datumPolaganja)) {
+
+					float prosjek = 0;
+					for (int k = 0; k < studenti[i]->brojPolozenih; k++)
+					{
+						prosjek = prosjek + studenti[i]->polozeni[k].ocjena;
+					}
+					prosjek = prosjek / studenti[i]->brojPolozenih;
+					cout << j + 1 << " " << studenti[i]->imePrezime << " -> " << studenti[i]->polozeni[j].nazivPredmeta << " (" << studenti[i]->polozeni[j].ocjena << ") " << "prosjek -> " << prosjek << endl;
+
 				}
 			}
-			
+
 		}
 	}
 	else {
@@ -188,15 +188,15 @@ void Pretraga(Student *studenti[], int max){
 		{
 			for (int j = 0; j < studenti[i]->brojPolozenih; j++)
 			{
-				if (strstr(studenti[i]->polozeni[j].napomena, trazi) != nullptr){
-					cout << studenti[i]->imePrezime << " -> predmet " << studenti[i]->polozeni[j].nazivPredmeta<<endl;
+				if (strstr(studenti[i]->polozeni[j].napomena, trazi) != nullptr) {
+					cout << studenti[i]->imePrezime << " -> predmet " << studenti[i]->polozeni[j].nazivPredmeta << endl;
 				}
 			}
 		}
 	}
-	
+
 }
-void Dealociraj(Student *studenti[], int max){
+void Dealociraj(Student *studenti[], int max) {
 	for (int i = 0; i < max; i++)
 	{
 		delete[] studenti[i]->imePrezime; studenti[i]->imePrezime = nullptr;
@@ -237,7 +237,7 @@ void main() {
 			trenutnoStudenata++;
 		}
 		else if (izbor == 2) {
-			cout << studentiIgodina[0]->imePrezime<<endl;
+			cout << studentiIgodina[0]->imePrezime << endl;
 			DodajPolozeniPredmet(studentiIgodina, trenutnoStudenata);
 			/*
 			Ime i prezime -> Denis Music
