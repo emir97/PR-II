@@ -98,5 +98,5 @@ USPJEH: 10/20 BODOVA (50%)
 
 
 /*oslobađa zauzetu memoriju*/
-Dealociraj(ispit
+Dealociraj(ispitPRII, odgovoriNaPitanja, trenutnoPitanja);
 }
