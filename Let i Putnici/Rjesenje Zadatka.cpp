@@ -164,7 +164,7 @@ char *GetOznakaSjedista(Let l) {
 			return oznakaSjedista;
 			
 		}
-		// znaci mjesto je zauzeto  i trazimo iduce slobodno
+		// mjesto je zauzeto  i trazimo iduce slobodno
 		kolona++;
 		if (kolona == l._brojKolonaUAvionu) {
 			kolona = 0;
