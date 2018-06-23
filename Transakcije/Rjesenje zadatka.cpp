@@ -5,7 +5,7 @@ Pitanja na -> -> emir.veledar@edu.fit.ba
 */
 #include<iostream>
 using namespace std;
-char * crt = "\n---------------------------\n";
+const char * crt = "\n---------------------------\n";
 int ODG;
 
 enum VrstaRacuna { TEKUCI, DEVIZNI, STEDNI };
@@ -49,7 +49,7 @@ struct Transakcija {
 	float _iznos;
 	VrstaTransakcije _vrstaTransakcije; // ako je isplata vrijednost _TO postaviti na brojRacuna sa koga se transakcija vrsi
 	bool _aktivna; //u slucaju da se transakcija izbrise ona postaje neaktivna, ali je bitno da o njoj ostane zapis
-	/*	Unos / Ispis */
+				   /*	Unos / Ispis */
 	void Unos(char *brojRacuna, float iznos, VrstaTransakcije vrsta);
 	void Ispis();
 	void KopirajTransakcije(Transakcija t);
@@ -75,7 +75,7 @@ void Transakcija::Ispis() {
 	cout << crt;
 }
 // kopiraj iz jedne transakciju u drugu
-void Transakcija::KopirajTransakcije(Transakcija t){
+void Transakcija::KopirajTransakcije(Transakcija t) {
 	strcpy_s(_TO, 20, t._TO);
 	_vrstaTransakcije = t._vrstaTransakcije;
 	_iznos = t._iznos;
@@ -128,7 +128,7 @@ void Racun::Dealociraj() {
 void Racun::DodajTransakciju(char *brojRacuna, float iznos, VrstaTransakcije vrsta) {
 	Transakcija *temp = new Transakcija[_brojTransakcija + 1];
 	for (int i = 0; i < _brojTransakcija; i++)
-		temp[i].Unos(_transakcije[i]._TO, _transakcije[i]._iznos, _transakcije[i]._vrstaTransakcije);
+		temp[i].KopirajTransakcije(_transakcije[i]);
 
 	temp[_brojTransakcija].Unos(brojRacuna, iznos, vrsta);
 	delete[] _transakcije;
@@ -139,7 +139,7 @@ void Racun::UkloniTranskaciju(int redni_broj_transkacije) {
 	_transakcije[redni_broj_transkacije]._aktivna = false; // Deaktiviranje transakcije
 }
 // kopiranje atributa iz jednog racuna u drugi
-void Racun::KopirajRacune(Racun r){
+void Racun::KopirajRacune(Racun r) {
 	_vrstaRacuna = r._vrstaRacuna;
 	strcpy_s(_brojRacuna, 20, r._brojRacuna);
 	_transakcije = new Transakcija[r._brojTransakcija];
@@ -201,12 +201,12 @@ void Korisnik::Dealociraj() {
 	delete[] _imePrezime; _imePrezime = nullptr;
 }
 // dodavanje racuna dinamickim prosirivanjem niza...
-void Korisnik::DodajRacun(VrstaRacuna vrsta, char *brojRacuna){
+void Korisnik::DodajRacun(VrstaRacuna vrsta, char *brojRacuna) {
 	Racun *temp = new Racun[_trenutnoRacuna + 1]; // kreiranje pomocnog niza
 	for (int i = 0; i < _trenutnoRacuna; i++) // kopiranje vrijednosti objekata u pomocni 
-		temp[i].Unos(_racuni[i]._vrstaRacuna, _racuni[i]._brojRacuna);
+		temp[i].KopirajRacune(_racuni[i]);
 	temp[_trenutnoRacuna].Unos(vrsta, brojRacuna); // unos novog objekta
-	// brisanje starih racuna
+												   // brisanje starih racuna
 	for (int i = 0; i < _trenutnoRacuna; i++)
 		_racuni[i].Dealociraj();
 	delete[] _racuni;
@@ -219,7 +219,7 @@ void Korisnik::UkloniRacun(int redni_broj_racuna) {
 }
 
 // kopiranje starog korisnika u novi..
-void Korisnik::KopirajKorisnika(Korisnik k){
+void Korisnik::KopirajKorisnika(Korisnik k) {
 	strcpy_s(_JMBG, 14, k._JMBG);
 	_imePrezime = new char[strlen(k._imePrezime) + 1];
 	strcpy_s(_imePrezime, strlen(k._imePrezime) + 1, k._imePrezime);
@@ -230,12 +230,12 @@ void Korisnik::KopirajKorisnika(Korisnik k){
 	_aktivan = k._aktivan;
 }
 
-Transakcija *Korisnik::GetTransakcijeByIznos(float iznos, int &broj_transakcija){
+Transakcija *Korisnik::GetTransakcijeByIznos(float iznos, int &broj_transakcija) {
 	Transakcija *transakcije = new Transakcija[broj_transakcija];
 	for (int i = 0; i < _trenutnoRacuna; i++)
 	{
-		for (int j = 0; j < _racuni[i]._brojTransakcija; j++){
-			if (_racuni[i]._transakcije[j]._iznos > iznos  && _racuni[i]._transakcije[j]._aktivna){
+		for (int j = 0; j < _racuni[i]._brojTransakcija; j++) {
+			if (_racuni[i]._transakcije[j]._iznos > iznos  && _racuni[i]._transakcije[j]._aktivna) {
 				Transakcija *temp = new Transakcija[broj_transakcija + 1];
 				for (int k = 0; k < broj_transakcija; k++)
 					temp[k].KopirajTransakcije(transakcije[k]);
@@ -248,33 +248,33 @@ Transakcija *Korisnik::GetTransakcijeByIznos(float iznos, int &broj_transakcija)
 	if (broj_transakcija == 0) return nullptr;
 	return transakcije;
 }
-Transakcija *Korisnik::GetTransakcije(char *TO, int &broj_transakcija){
+Transakcija *Korisnik::GetTransakcije(char *TO, int &broj_transakcija) {
 	Transakcija *transakcije = new Transakcija[broj_transakcija];
 	for (int i = 0; i < _trenutnoRacuna; i++)
-	for (int j = 0; j < _racuni[i]._brojTransakcija; j++)
-	if (strcmp(_racuni[i]._transakcije[j]._TO, TO) == 0){
-		Transakcija *temp = new Transakcija[broj_transakcija + 1];
-		for (int k = 0; k < broj_transakcija; k++)
-			temp[k].KopirajTransakcije(transakcije[k]);
-		delete[] transakcije;
-		temp[broj_transakcija++].KopirajTransakcije(_racuni[i]._transakcije[j]);
-		transakcije = temp;
-	}
+		for (int j = 0; j < _racuni[i]._brojTransakcija; j++)
+			if (strcmp(_racuni[i]._transakcije[j]._TO, TO) == 0) {
+				Transakcija *temp = new Transakcija[broj_transakcija + 1];
+				for (int k = 0; k < broj_transakcija; k++)
+					temp[k].KopirajTransakcije(transakcije[k]);
+				delete[] transakcije;
+				temp[broj_transakcija++].KopirajTransakcije(_racuni[i]._transakcije[j]);
+				transakcije = temp;
+			}
 	if (broj_transakcija == 0) return nullptr;
 	return transakcije;
 }
-Transakcija *Korisnik::GetTransakcijeByDatum(int &broj_transakcija){
+Transakcija *Korisnik::GetTransakcijeByDatum(int &broj_transakcija) {
 	Transakcija *transakcije = new Transakcija[broj_transakcija];
 	for (int i = 0; i < _trenutnoRacuna; i++)
-	for (int j = 0; j < _racuni[i]._brojTransakcija; j++)
-	if (_racuni[i]._transakcije[j]._aktivna){
-		Transakcija *temp = new Transakcija[broj_transakcija + 1];
-		for (int k = 0; k < broj_transakcija; k++)
-			temp[k].KopirajTransakcije(transakcije[k]);
-		delete[] transakcije;
-		temp[broj_transakcija++].KopirajTransakcije(_racuni[i]._transakcije[j]);
-		transakcije = temp;
-	}
+		for (int j = 0; j < _racuni[i]._brojTransakcija; j++)
+			if (_racuni[i]._transakcije[j]._aktivna) {
+				Transakcija *temp = new Transakcija[broj_transakcija + 1];
+				for (int k = 0; k < broj_transakcija; k++)
+					temp[k].KopirajTransakcije(transakcije[k]);
+				delete[] transakcije;
+				temp[broj_transakcija++].KopirajTransakcije(_racuni[i]._transakcije[j]);
+				transakcije = temp;
+			}
 	if (broj_transakcija == 0) return nullptr;
 	return transakcije;
 }
@@ -295,7 +295,7 @@ int PrikaziMenu() {
 	return izbor;
 }
 
-void OcistiEkran(){
+void OcistiEkran() {
 	system("cls");
 }
 
@@ -309,15 +309,15 @@ void main() {
 	do {
 		izborMenu = PrikaziMenu();
 		cin.ignore();
-		if (izborMenu == 1){ // dodavanje korisnika
-			// mehanizam prosirivanja dinamickog niza ...
-			// 1 -> kreiranje pomocnog koji je za jedan veci od postojeceg zbog unosa zeljenok korisnika
+		if (izborMenu == 1) { // dodavanje korisnika
+							  // mehanizam prosirivanja dinamickog niza ...
+							  // 1 -> kreiranje pomocnog koji je za jedan veci od postojeceg zbog unosa zeljenok korisnika
 			Korisnik *temp = new Korisnik[trenutnoKorisnika + 1];
 			// 2 -> kopiranje vrijednosti korisnika iz starog niza u novi...
 			for (int i = 0; i < trenutnoKorisnika; i++)
 				temp[i].KopirajKorisnika(korisnici[i]);
 			// 3 -> brisanje starog niza korisnika (oslobadjanje memorije)
-			if (korisnici != nullptr){
+			if (korisnici != nullptr) {
 				for (int i = 0; i < trenutnoKorisnika; i++)
 					korisnici[i].Dealociraj();
 				delete[] korisnici;
@@ -340,8 +340,8 @@ void main() {
 			// 6 -> uvecanje brojaca korisnika
 			trenutnoKorisnika++;
 		}
-		else if (izborMenu == 2){
-			if (korisnici != nullptr){	// provjera da li postoji korisnika ako ne postoji ne moguce je dodati racun....
+		else if (izborMenu == 2) {
+			if (korisnici != nullptr) {	// provjera da li postoji korisnika ako ne postoji ne moguce je dodati racun....
 				int temp, vrsta_racuna;
 				VrstaRacuna enum_vrsta;
 				char broj_racuna[20];
@@ -355,14 +355,14 @@ void main() {
 				}
 				// izbor korisnika
 				cout << "Unesite redni broj korisnika kojem zelite dodati racun -> ";
-				do{
+				do {
 					cin >> temp;
 					if (temp<1 || temp>trenutnoKorisnika)
 						cout << "Pogresan unos, unesite ponovo -> ";
 
 				} while (temp<1 || temp>trenutnoKorisnika);
 				OcistiEkran(); // ciscenje ekrana
-				// izbor vrste racuna
+							   // izbor vrste racuna
 				cout << "Unesi vrstu racuna 1. TEKUCI, 2. DEVIZNI, 3. STEDNI" << endl;
 				do
 				{
@@ -374,7 +374,7 @@ void main() {
 				enum_vrsta = (VrstaRacuna)--vrsta_racuna;
 				cin.ignore();
 				OcistiEkran(); // ciscenje ekrana
-				// unos broja racuna
+							   // unos broja racuna
 				cout << "Unesite broj racuna -> ";
 				cin.getline(broj_racuna, 20);
 
@@ -382,8 +382,8 @@ void main() {
 				korisnici[--temp].DodajRacun(enum_vrsta, broj_racuna);
 			}
 		}
-		else if (izborMenu == 3){
-			if (korisnici != nullptr){	// provjera da li postoji korisnika ako ne postoji ne moguce je dodati racun....
+		else if (izborMenu == 3) {
+			if (korisnici != nullptr) {	// provjera da li postoji korisnika ako ne postoji ne moguce je dodati racun....
 				char unos_korisnika[20];
 				cout << "Unesite ime ili prezime korisnika -> ";
 				cin.getline(unos_korisnika, 20);
@@ -391,7 +391,7 @@ void main() {
 				{
 					OcistiEkran(); // ciscenje ekrana
 					char *pok = strstr(korisnici[i]._imePrezime, unos_korisnika);
-					if (pok != nullptr){
+					if (pok != nullptr) {
 						char karakter;
 						cout << crt;  korisnici[i].Ispis(); cout << crt;
 						cout << "Da li zelite ovom korisniku dodati transakciju (D/N) -> ";
@@ -402,13 +402,13 @@ void main() {
 							if (toupper(karakter) != 'D' && toupper(karakter) != 'N')
 								cout << "Pogresan unos, unesite ponovo -> ";
 						} while (toupper(karakter) != 'D' && toupper(karakter) != 'N');
-						if (toupper(karakter) == 'D'){
+						if (toupper(karakter) == 'D') {
 
 							int unos; float iznos;
 							VrstaTransakcije v;
 							char broj_racuna[20];
 							cout << "Odaberite vrstu transakcije (1. UPLATA, 2. ISPLATA) -> ";
-							do{
+							do {
 								cin >> unos;
 								if (unos != 1 && unos != 2)
 									cout << "Pogresan unos, unesite ponovo -> ";
@@ -416,8 +416,8 @@ void main() {
 
 							v = (VrstaTransakcije) --unos;
 							OcistiEkran(); // ciscenje ekrana
-							// izbor racuna koji se zeli koristiti za transakciju
-							// ispis racuna
+										   // izbor racuna koji se zeli koristiti za transakciju
+										   // ispis racuna
 							for (int j = 0; j < korisnici[i]._trenutnoRacuna; j++)
 							{
 								cout << crt << "Redni broj " << j + 1 << endl;
@@ -444,8 +444,8 @@ void main() {
 			}
 
 		}
-		else if (izborMenu == 4){
-			if (korisnici != nullptr){ // u slucaju da nema korisnika onemoguceno izvrsavanje ove funkcije
+		else if (izborMenu == 4) {
+			if (korisnici != nullptr) { // u slucaju da nema korisnika onemoguceno izvrsavanje ove funkcije
 				int izbor_temp, izbor_korisnika_temp, izbor_racuna_temp;
 				cout << "Sta zelite deaktivirat: 1. KORISNIKA, 2. RACUN -> ";
 				// unos izbora brisanja
@@ -475,12 +475,12 @@ void main() {
 
 				} while (izbor_korisnika_temp<1 || izbor_korisnika_temp>trenutnoKorisnika);	// provjera validnosti unosa
 				izbor_korisnika_temp--;
-				if (izbor_temp == 1){
+				if (izbor_temp == 1) {
 					korisnici[izbor_korisnika_temp]._aktivan = false; // deaktiviranje korisnika
 				}
 				else {
 					system("cls"); // ciscenje ekrana
-					if (korisnici[izbor_korisnika_temp]._trenutnoRacuna > 0){ // u slucaju da izabrani korisnik nema kreirani racuna onemoguceno izvrsavanje ove funkcije....
+					if (korisnici[izbor_korisnika_temp]._trenutnoRacuna > 0) { // u slucaju da izabrani korisnik nema kreirani racuna onemoguceno izvrsavanje ove funkcije....
 
 						for (int i = 0; i < korisnici[izbor_korisnika_temp]._trenutnoRacuna; i++) // ispis svih racuna korisnika
 						{
@@ -489,7 +489,7 @@ void main() {
 							cout << crt;
 						}
 						cout << "Unesite redni broj racuna -> ";
-						do{
+						do {
 							cin >> izbor_racuna_temp;	// izbor racuna
 							if (izbor_racuna_temp<1 || izbor_racuna_temp>korisnici[izbor_korisnika_temp]._trenutnoRacuna)
 								cout << "Pogresan unos, unesite ponovo -> ";
@@ -506,7 +506,7 @@ void main() {
 	} while (izborMenu != 5);
 
 	// oslobadjanje svih zauzetih resursa memorije
-	if (korisnici != nullptr){
+	if (korisnici != nullptr) {
 		for (int i = 0; i < trenutnoKorisnika; i++)
 			korisnici[i].Dealociraj();
 		delete[] korisnici; korisnici = nullptr;
