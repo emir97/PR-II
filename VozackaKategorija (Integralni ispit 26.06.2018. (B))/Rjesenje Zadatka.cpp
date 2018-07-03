@@ -119,7 +119,7 @@ struct VozackaKategorija {
 				brojaci[*_listaIzvrsenihAktivnosti[i]._vrsta]++;
 				temp.Unos(*_listaIzvrsenihAktivnosti[i]._datumIzvrsenja._dan, *_listaIzvrsenihAktivnosti[i]._datumIzvrsenja._mjesec, *_listaIzvrsenihAktivnosti[i]._datumIzvrsenja._godina);
 			}
-			if (_listaIzvrsenihAktivnosti[i]._ocjena == 1)
+			if (_listaIzvrsenihAktivnosti[i]._ocjena < 3)
 				negativneOcjene[*_listaIzvrsenihAktivnosti[i]._vrsta]++;
 		}
 		for (size_t i = 0; i < 4; i++)

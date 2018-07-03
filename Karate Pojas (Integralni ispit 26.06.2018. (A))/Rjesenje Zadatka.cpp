@@ -97,7 +97,7 @@ struct KaratePojas {
 					Aktivnost temp;
 					temp.Unos(*_listaIzvrsenihAktivnosti[i]._vrsta, &_listaIzvrsenihAktivnosti[i]._datumIzvrsenja, _listaIzvrsenihAktivnosti[i]._ocjena, _listaIzvrsenihAktivnosti[i]._nazivOpis);
 					_listaIzvrsenihAktivnosti[i].Dealociraj();
-					
+
 					_listaIzvrsenihAktivnosti[i].Unos(*_listaIzvrsenihAktivnosti[i + 1]._vrsta, &_listaIzvrsenihAktivnosti[i + 1]._datumIzvrsenja, _listaIzvrsenihAktivnosti[i + 1]._ocjena, _listaIzvrsenihAktivnosti[i + 1]._nazivOpis);
 					_listaIzvrsenihAktivnosti[i + 1].Dealociraj();
 
@@ -119,7 +119,7 @@ struct KaratePojas {
 				// Uzimamo datum posljednje izvrsene obaveze
 				d.Unos(*_listaIzvrsenihAktivnosti[i]._datumIzvrsenja._dan, *_listaIzvrsenihAktivnosti[i]._datumIzvrsenja._mjesec, *_listaIzvrsenihAktivnosti[i]._datumIzvrsenja._godina);
 			}
-			if (_listaIzvrsenihAktivnosti[i]._ocjena == 1) {
+			if (_listaIzvrsenihAktivnosti[i]._ocjena < 6) {
 				negativneOcjene[*_listaIzvrsenihAktivnosti[i]._vrsta]++;
 			}
 		}
