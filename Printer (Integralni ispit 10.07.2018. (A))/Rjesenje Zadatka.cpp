@@ -174,7 +174,7 @@ struct Printer {
 		if (printaj) {
 			for (size_t i = 0; i < strlen(d._sadrzaj); i++)
 			{
-				if (i % 30 == 0)
+				if (i % BROJ_ZNAKOVA_PO_STRANICI == 0)
 					cout << crt;
 				cout << d._sadrzaj[i];
 			}
