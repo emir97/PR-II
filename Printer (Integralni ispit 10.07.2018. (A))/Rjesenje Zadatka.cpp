@@ -214,18 +214,18 @@ struct Printer {
 		}
 		return f;
 	}
-	float GetProsjecanBrojStranicaUPeriodu_Od_Do(DatumVrijeme OD, DatumVrijeme DO, int brojDokumenata = 0, int ukupanBrojStranica = 0, int brojPrintanihStranica = 0) {
+	float GetProsjecanBrojStranicaUPeriodu_Od_Do(DatumVrijeme OD, DatumVrijeme DO, int brojDokumenata = 0, int ukupanBrojStranica = 0, int brojPrintanihDokumenata = 0) {
 		if (_trenutnoDokumenata == brojDokumenata) {
-			return (float)brojPrintanihStranica / ukupanBrojStranica;
+			return (float)ukupanBrojStranica / brojPrintanihDokumenata;
 		}
-		if (_dokumenti[brojDokumenata]._kreiran->GetDani() >= OD.GetDani() && _dokumenti[brojDokumenata]._kreiran->GetDani() < DO.GetDani()) {
+		if (_dokumenti[brojDokumenata]._kreiran->GetDani() >= OD.GetDani() && _dokumenti[brojDokumenata]._kreiran->GetDani() <= DO.GetDani()) {
 			// provjera da li je printan
 			if (isPrintat(_dokumenti[brojDokumenata])) {
-				return GetProsjecanBrojStranicaUPeriodu_Od_Do(OD, DO, brojDokumenata + 1, ukupanBrojStranica + _dokumenti[brojDokumenata]._brojStranica, brojPrintanihStranica + _dokumenti[brojDokumenata]._brojStranica);
+				return GetProsjecanBrojStranicaUPeriodu_Od_Do(OD, DO, brojDokumenata + 1, ukupanBrojStranica + _dokumenti[brojDokumenata]._brojStranica, brojPrintanihDokumenata + 1);
 			}
-			return GetProsjecanBrojStranicaUPeriodu_Od_Do(OD, DO, brojDokumenata + 1, ukupanBrojStranica + _dokumenti[brojDokumenata]._brojStranica, brojPrintanihStranica);
+			return GetProsjecanBrojStranicaUPeriodu_Od_Do(OD, DO, brojDokumenata + 1, ukupanBrojStranica + _dokumenti[brojDokumenata]._brojStranica, brojPrintanihDokumenata);
 		}
-		return GetProsjecanBrojStranicaUPeriodu_Od_Do(OD, DO, brojDokumenata + 1, ukupanBrojStranica, brojPrintanihStranica);
+		return GetProsjecanBrojStranicaUPeriodu_Od_Do(OD, DO, brojDokumenata + 1, ukupanBrojStranica, brojPrintanihDokumenata);
 	}
 	void Dealociraj() {
 		delete[] _model; _model = nullptr;
@@ -265,7 +265,7 @@ int main() {
 	ispitPRII.Ispis();//ISPISUJE SVE PODATKE O DOKUMENTU
 
 	ispitMAT.DodajSadrzaj("Matematika se razvila iz potrebe da se obavljaju proracuni u trgovini, vrse mjerenja zemljista i predvidjaju ");
-	ispitMAT.DodajSadrzaj("sastronomski dogadjaji, i ove tri primjene se mogu dovesti u vezu sa grubom podjelom matematike ");
+	ispitMAT.DodajSadrzaj("astronomski dogadjaji, i ove tri primjene se mogu dovesti u vezu sa grubom podjelom matematike ");
 
 	Printer hp3200; hp3200.Unos("HP 3200");
 	/*PRINTER NECE DOZVOLITI PRINTANJE DOKUMENATA U CIJEM SADRZAJU SE NALAZI NEKA OD ZABRANJENIH RIJECI DEFINISANIH FILTERIMA*/
