@@ -62,8 +62,8 @@ struct Modifikacija {
 	DatumVrijeme _vrijemeModifikacije;
 	void Unos(const char * sadrzaj, vrstaAktivnosti aktivnost, DatumVrijeme vm) {
 		_korisnicnkoIme = AlocirajNizKaraktera(sadrzaj);
-_aktivnost = aktivnost;
-_vrijemeModifikacije.Unos(*vm._dan, *vm._mjesec, *vm._godina, *vm._dan, *vm._minuti);
+		_aktivnost = aktivnost;
+		_vrijemeModifikacije.Unos(*vm._dan, *vm._mjesec, *vm._godina, *vm._dan, *vm._minuti);
 	}
 	void Dealociraj() {
 		delete[] _korisnicnkoIme; _korisnicnkoIme = nullptr;
@@ -161,8 +161,8 @@ struct Printer {
 
 	}
 	/* Objekat se mora primiti po referenci (U slucaju da saljete objekat po vrijednosti to znaci da se kopira sve sto se nalazi u
-	 objektu iz "main" funkcije u ovaj iz parametra pa tako i adresa na koju pokazuje unique_ptr i dobivamo 2 unique_ptr koja pokazuju na jedan objekat sto
-	 rusi osobinu unique_ptr da samo on moze cuvati adresu objekta na koji "pokazuje") u suprotnom morate poznavati gradivo koje izlazi iz okvira i PR III. */
+	objektu iz "main" funkcije u ovaj iz parametra pa tako i adresa na koju pokazuje unique_ptr i dobivamo 2 unique_ptr koja pokazuju na jedan objekat sto
+	rusi osobinu unique_ptr da samo on moze cuvati adresu objekta na koji "pokazuje") u suprotnom morate poznavati gradivo koje izlazi iz okvira i PR III. */
 	bool Printaj(Dokument &d, const char *username, DatumVrijeme datum) {
 		// provjera da li dokument ima sadrzaj
 		if (d._sadrzaj == nullptr) return false;
@@ -187,9 +187,9 @@ struct Printer {
 		int modifikacije[4] = { 0 };
 		for (size_t i = 0; i < d._brojModifikacija; i++)
 			modifikacije[d._modifikacije[i]._aktivnost]++;
-		/*if (modifikacije[0] != 1 || modifikacije[1] < 1 || modifikacije[2] < 1)
-			return false;*/
-		
+		if (modifikacije[0] != 1 || modifikacije[1] < 1 || modifikacije[2] < 1)
+			return false;
+
 		// ako ne prodje ni jedan uslov znaci da dokument ispunjava sve uslove za printanje 
 		for (size_t i = 0; i < strlen(d._sadrzaj); i++)
 		{
@@ -252,7 +252,7 @@ struct Printer {
 				}
 			}
 		}
-		
+
 		if (brojModifikacija == 0) return pair<Modifikacija*, int>(nullptr, 0);
 
 		Modifikacija *m = new Modifikacija[brojModifikacija];
