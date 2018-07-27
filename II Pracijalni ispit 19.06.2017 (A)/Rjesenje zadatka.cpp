@@ -12,7 +12,7 @@ using namespace std;
 //narednu liniju code-a ignorisite, osim u slucaju da vam bude predstavljala smetnje u radu
 #pragma warning(disable:4996)
 
-char *crt = "\n-------------------------------------------\n";
+const char *crt = "\n-------------------------------------------\n";
 
 enum eNacinStudiranja { REDOVAN, DL };
 enum eRazred { PRVI = 1, DRUGI, TRECI, CETVRTI };
@@ -38,7 +38,7 @@ struct DatumVrijeme {
 		cout << *_dan << "." << *_mjesec << "." << *_godina << " " << *_sati << ":" << *_minuti << endl;
 	}
 
-	char *GetDatumKaoNizKaraktera(){
+	char *GetDatumKaoNizKaraktera() {
 		char dan[3], mjesec[3], godina[5], sati[3], minuti[3];
 		_itoa(*_dan, dan, 10);
 		_itoa(*_mjesec, mjesec, 10);
@@ -70,7 +70,7 @@ struct Predmet {
 	char * _naziv;
 	int _ocjena;
 	DatumVrijeme * _datumUnosa;
-	void Unos(char * naziv, int ocjena, DatumVrijeme datumUnosa) {
+	void Unos(const char * naziv, int ocjena, DatumVrijeme datumUnosa) {
 		int vel = strlen(naziv) + 1;
 		_naziv = new char[vel];
 		strcpy_s(_naziv, vel, naziv);
@@ -109,7 +109,7 @@ struct Uspjeh {
 		for (size_t i = 0; i < _brojPredmeta; i++)
 			_predmeti[i].Ispis();
 	}
-	void DodajPredmet(Predmet p){
+	void DodajPredmet(Predmet p) {
 		Predmet *temp = new Predmet[_brojPredmeta + 1];
 		for (size_t i = 0; i < _brojPredmeta; i++)
 		{
@@ -124,12 +124,16 @@ struct Uspjeh {
 	}
 };
 
+int PretvoriUDane(DatumVrijeme d) {
+	return *d._dan + *d._mjesec * 30 + *d._godina * 365;
+}
+
 struct Kandidat {
 	eNacinStudiranja _nacinStudiranja;
 	char * _imePrezime;
 	shared_ptr<Uspjeh> _uspjeh[4];
 
-	void Unos(eNacinStudiranja nacinStudiranja, char * imePrezime) {
+	void Unos(eNacinStudiranja nacinStudiranja, const char * imePrezime) {
 		int vel = strlen(imePrezime) + 1;
 		_imePrezime = new char[vel];
 		strcpy_s(_imePrezime, vel, imePrezime);
@@ -149,15 +153,12 @@ struct Kandidat {
 			if (_uspjeh[i] != nullptr)
 				_uspjeh[i]->Ispis();
 	}
-	int PretvoriUDane(DatumVrijeme d){
-		return *d._dan + *d._mjesec * 30 + *d._godina * 365;
-	}
-	bool DodajPredmet(eRazred razred, Predmet p){
+	bool DodajPredmet(eRazred razred, Predmet p) {
 		if (razred != PRVI && razred != DRUGI && razred != TRECI && razred != CETVRTI)
 			return false;
 		for (size_t i = 0; i < 4; i++)
 		{
-			if (_uspjeh[i] != nullptr){
+			if (_uspjeh[i] != nullptr) {
 				for (size_t j = 0; j < _uspjeh[i]->_brojPredmeta; j++)
 				{
 					if (strcmp(_uspjeh[i]->_predmeti[j]._naziv, p._naziv) == 0)
@@ -167,7 +168,7 @@ struct Kandidat {
 		}
 		if (PretvoriUDane(rokZaPrijavu) <= PretvoriUDane(*p._datumUnosa))
 			return false;
-		if (_uspjeh[(int)razred - 1] == nullptr){
+		if (_uspjeh[(int)razred - 1] == nullptr) {
 			_uspjeh[(int)razred - 1] = make_shared<Uspjeh>();
 			_uspjeh[(int)razred - 1]->Unos(razred);
 		}
@@ -176,23 +177,27 @@ struct Kandidat {
 	}
 };
 
-Kandidat *rekNajboljaOcjena(Kandidat *kandidati, int broj_kandidata, char *predmet, Kandidat *najbolja_ocjena = nullptr, int ocjena = 0){
+
+Kandidat *rekNajboljaOcjena(Kandidat *kandidati, int broj_kandidata, const char *predmet, Kandidat *najbolja_ocjena = nullptr, int ocjena = 0, DatumVrijeme datumEvidentiranja = { new int(0), new int(0), new int(0), new int(0), new int(0) }) {
 	if (broj_kandidata <= 0)
 		return najbolja_ocjena;
 	if (najbolja_ocjena == nullptr)
 		return rekNajboljaOcjena(kandidati, broj_kandidata, predmet, &kandidati[broj_kandidata - 1]);
 	for (size_t i = 0; i < 4; i++)
 	{
-		if (kandidati[broj_kandidata - 1]._uspjeh[i] != nullptr){
+		if (kandidati[broj_kandidata - 1]._uspjeh[i] != nullptr) {
 			for (size_t j = 0; j < kandidati[broj_kandidata - 1]._uspjeh[i]->_brojPredmeta; j++)
 			{
-				if (strcmp(kandidati[broj_kandidata - 1]._uspjeh[i]->_predmeti[j]._naziv, predmet) == 0 && kandidati[broj_kandidata - 1]._uspjeh[i]->_predmeti[j]._ocjena > ocjena){
-					return rekNajboljaOcjena(kandidati, broj_kandidata - 1, predmet, &kandidati[broj_kandidata - 1], kandidati[broj_kandidata - 1]._uspjeh[i]->_predmeti[j]._ocjena);
+				if (strcmp(kandidati[broj_kandidata - 1]._uspjeh[i]->_predmeti[j]._naziv, predmet) == 0 && kandidati[broj_kandidata - 1]._uspjeh[i]->_predmeti[j]._ocjena > ocjena) {
+					return rekNajboljaOcjena(kandidati, broj_kandidata - 1, predmet, &kandidati[broj_kandidata - 1], kandidati[broj_kandidata - 1]._uspjeh[i]->_predmeti[j]._ocjena, *kandidati[broj_kandidata - 1]._uspjeh[i]->_predmeti[j]._datumUnosa);
+				}
+				if (strcmp(kandidati[broj_kandidata - 1]._uspjeh[i]->_predmeti[j]._naziv, predmet) == 0 && kandidati[broj_kandidata - 1]._uspjeh[i]->_predmeti[j]._ocjena == ocjena && PretvoriUDane(datumEvidentiranja) > PretvoriUDane(*kandidati[broj_kandidata - 1]._uspjeh[i]->_predmeti[j]._datumUnosa)) {
+					return rekNajboljaOcjena(kandidati, broj_kandidata - 1, predmet, &kandidati[broj_kandidata - 1], kandidati[broj_kandidata - 1]._uspjeh[i]->_predmeti[j]._ocjena, *kandidati[broj_kandidata - 1]._uspjeh[i]->_predmeti[j]._datumUnosa);
 				}
 			}
 		}
 	}
-	return rekNajboljaOcjena(kandidati, broj_kandidata - 1, predmet, najbolja_ocjena, ocjena);
+	return rekNajboljaOcjena(kandidati, broj_kandidata - 1, predmet, najbolja_ocjena, ocjena, datumEvidentiranja);
 }
 
 void main()
@@ -247,9 +252,9 @@ void main()
 	if (prijave2017[1].DodajPredmet(DRUGI, Engleski))
 		cout << "Predmet uspjesno dodan!" << crt;
 
-	///*
-	//koristeci Lambda izraz kreirati funkciju koja ce vratiti uspjeh kandidata koji je ostvario najveci prosjek (na nivou razreda, a ne ukupni prosjek). ukoliko vise kandidata ima isti prosjek funkcija vraca uspjeh (najboljeg razreda) prvog pronadjenog kandidata
-	//*/
+	/*
+	koristeci Lambda izraz kreirati funkciju koja ce vratiti uspjeh kandidata koji je ostvario najveci prosjek (na nivou razreda, a ne ukupni prosjek). ukoliko vise kandidata ima isti prosjek funkcija vraca uspjeh (najboljeg razreda) prvog pronadjenog kandidata
+	*/
 	auto najboljiUspjeh = [prijave2017, brojKandidata]()-> shared_ptr<Uspjeh> {
 		float prosjek1 = 0;
 		float prosjek2 = 0;
@@ -258,13 +263,13 @@ void main()
 		{
 			for (size_t j = 0; j < 4; j++)
 			{
-				if (prijave2017[i]._uspjeh[j] != nullptr){
+				if (prijave2017[i]._uspjeh[j] != nullptr) {
 					for (size_t k = 0; k < prijave2017[i]._uspjeh[j]->_brojPredmeta; k++)
 					{
 						prosjek1 = prosjek1 + prijave2017[i]._uspjeh[j]->_predmeti[k]._ocjena;
 					}
 					prosjek1 = prosjek1 / prijave2017[i]._uspjeh[j]->_brojPredmeta;
-					if (prosjek1 > prosjek2){
+					if (prosjek1 > prosjek2) {
 						prosjek2 = prosjek1;
 						pok = prijave2017[i]._uspjeh[j];
 					}
@@ -276,12 +281,13 @@ void main()
 	shared_ptr<Uspjeh> najbolji = najboljiUspjeh();
 	najbolji->Ispis();
 
-	///*
-	//napisati rekurzivnu funkciju koja ce vratiti pokazivac na kandidata sa najvecom ocjenom na predmetu koji je proslijedjen kao parametar. ukoliko je vise kandidata ostvarilo istu ocjenu, funkcija treba da vrati onog kandidata koji je prvi evidentirao tu ocjenu (ako je isto vrijeme evidentiranja, onda funkcija vraca kandidata koji je prvi u nizu).	u slucaju da niti jedan kandidat nije evidentirao trazeni predmet funkcija vraca nullptr. u nastavku je prikazan primjer poziva rekurzivne funkcije, a ostale parametre dodajte po potrebi.
-	//*/
+	/*
+	napisati rekurzivnu funkciju koja ce vratiti pokazivac na kandidata sa najvecom ocjenom na predmetu koji je proslijedjen kao parametar. ukoliko je vise kandidata ostvarilo istu ocjenu, funkcija treba da vrati onog kandidata koji je prvi evidentirao tu ocjenu (ako je isto vrijeme evidentiranja, onda funkcija vraca kandidata koji je prvi u nizu).	u slucaju da niti jedan kandidat nije evidentirao trazeni predmet funkcija vraca nullptr. u nastavku je prikazan primjer poziva rekurzivne funkcije, a ostale parametre dodajte po potrebi.
+	*/
 	Kandidat * kandidatSaNajboljomOcjenom = rekNajboljaOcjena(prijave2017, brojKandidata, "Matematika");
+	cout << "Kandidat -> ";
 	kandidatSaNajboljomOcjenom->Ispis();
-	
+
 	for (size_t i = 0; i < brojKandidata; i++)
 	{
 		prijave2017[i].Ispis();

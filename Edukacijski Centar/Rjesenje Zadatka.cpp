@@ -43,7 +43,7 @@ struct Kurs {
 		cout << crt;
 		cout << "Predmet -> " << enumPredmetiChar[_predmet] << endl;
 		cout << "Razred -> " << _razredi << endl;
-		cout << "Pocetak -> "; _pocetak->Ispis(); 
+		cout << "Pocetak -> "; _pocetak->Ispis();
 		cout << "Kraj -> "; _kraj->Ispis();
 		cout << "Ime Predavaca -> " << _imePredavaca << endl;
 		cout << crt;
@@ -59,7 +59,7 @@ struct Kurs {
 struct Polaznik {
 	Datum * _datumRodjenja;
 	char * _imePrezime;
-	void Unos(Datum datumRodjenja,const char * imePrezime) {
+	void Unos(Datum datumRodjenja, const char * imePrezime) {
 		int size = strlen(imePrezime) + 1;
 		_imePrezime = new char[size];
 		strcpy_s(_imePrezime, size, imePrezime);
@@ -105,7 +105,7 @@ struct Polaganja {
 		cout << "Polaznik -> "; _polaznik->Ispis();
 		cout << "Kurs -> "; _kurs->Ispis();
 		cout << "Datum polaganja -> "; _datumPolaganja->Ispis();
-		cout << "Ocjena -> " << _ocjena<<endl;
+		cout << "Ocjena -> " << _ocjena << endl;
 		cout << crt;
 	}
 };
@@ -116,7 +116,7 @@ struct EdukacijskiCentar {
 	int _trenutnoKurseva;
 	Polaganja * _polaganja;
 	int _trenutnoPolaganja;
-	
+
 	void Unos(const char *naziv) {
 		int size = strlen(naziv) + 1;
 		_nazivCentra = new char[size];
@@ -141,7 +141,7 @@ struct EdukacijskiCentar {
 		bool postojiKurs = false;
 		for (size_t i = 0; i < _trenutnoKurseva; i++)
 		{
-			if (_kursevi[i]->_predmet == p._kurs->_predmet && abs(_kursevi[i]->_kraj->GetDani() - p._datumPolaganja->GetDani()) > 15) {
+			if (_kursevi[i]->_predmet == p._kurs->_predmet && (p._datumPolaganja->GetDani() - _kursevi[i]->_kraj->GetDani()) < 15) {
 				postojiKurs = true;
 				break;
 			}
@@ -149,9 +149,9 @@ struct EdukacijskiCentar {
 		if (!postojiKurs) return false;
 		for (size_t i = 0; i < _trenutnoPolaganja; i++)
 		{
-			if(strcmp(_polaganja[i]._polaznik->_imePrezime, p._polaznik->_imePrezime) == 0 &&
+			if (strcmp(_polaganja[i]._polaznik->_imePrezime, p._polaznik->_imePrezime) == 0 &&
 				_polaganja[i]._kurs->_predmet == p._kurs->_predmet &&
-				_polaganja[i]._ocjena > p._ocjena){
+				_polaganja[i]._ocjena > p._ocjena) {
 
 				return false;
 
@@ -210,7 +210,7 @@ struct EdukacijskiCentar {
 
 	void Ispis() {
 		cout << "Naziv edukacijskog centra -> " << _nazivCentra << endl;
-		cout << "Kursevi koje nudi edukacijski centar: " << endl<<crt;
+		cout << "Kursevi koje nudi edukacijski centar: " << endl << crt;
 		for (size_t i = 0; i < _trenutnoKurseva; i++)
 			_kursevi[i]->Ispis();
 		cout << "Polaganja: " << endl << crt;
@@ -221,6 +221,7 @@ struct EdukacijskiCentar {
 
 float PretragaRekurzivno(EdukacijskiCentar centar, enumPredmeti predmet, int godina, int brojacPolaganja = 0, float sumaUspjeha = 0, int brojUspjeha = 0) {
 	if (centar._trenutnoPolaganja == brojacPolaganja) {
+		if (brojUspjeha == 0) return 0;
 		return (float)sumaUspjeha / brojUspjeha;
 	}
 	if (centar._polaganja[brojacPolaganja]._kurs->_predmet == predmet && *centar._polaganja[brojacPolaganja]._datumPolaganja->_godina == godina)
@@ -309,6 +310,8 @@ void main() {
 	denisMatematika.Dealociraj(); zaninHemija.Dealociraj();
 	mostar.Dealociraj();
 	if (polaganjaByDatumiRazred != nullptr) {
+		for (size_t i = 0; i < brojPolaganja; i++)
+			polaganjaByDatumiRazred[i].Dealociraj();
 		delete[] polaganjaByDatumiRazred; polaganjaByDatumiRazred = nullptr;
 	}
 	system("pause");
