@@ -1,12 +1,12 @@
 ﻿#include <iostream>
-#include <fstream>
+
 using namespace std;
 
 //narednu liniju code-a ignorisite, osim u slucaju da vam bude predstavljala smetnje u radu
 #pragma warning(disable:4996)
 
 enum enumKursevi { HtmlCSSJavaScript, SoftwareEngeneeringFundamentals, MasteringSQL, WindowsSecurity };
-char *crt = "\n--------------------------------------------\n";
+const char *crt = "\n--------------------------------------------\n";
 
 struct Datum {
 	int * _dan, *_mjesec, *_godina;
@@ -25,7 +25,7 @@ struct Kurs {
 	Datum _kraj;
 	char * _imePredavaca;
 	bool _aktivan;//SVAKI KURS JE NA POCETKU AKTIVAN
-	void Unos(enumKursevi kurs, Datum OD, Datum DO, char *predavac){
+	void Unos(enumKursevi kurs, Datum OD, Datum DO, const char *predavac) {
 		_kurs = kurs;
 		_pocetak.Unos(*OD._dan, *OD._mjesec, *OD._godina);
 		_kraj.Unos(*DO._dan, *DO._mjesec, *DO._godina);
@@ -39,18 +39,18 @@ struct Kurs {
 		_pocetak.Dealociraj();
 		_kraj.Dealociraj();
 	}
-	void Ispis(){
+	void Ispis() {
 		cout << "Datum pocetka -> ";
 		_pocetak.Ispis();
 		cout << "Datum kraja -> ";
 		_kraj.Ispis();
-		cout << "Predavac -> " << _imePredavaca<<endl;
+		cout << "Predavac -> " << _imePredavaca << endl;
 	}
 };
 struct Polaznik {
 	int _polaznikID;
 	char * _imePrezime;
-	void Unos(int polaznikID, char * imePrezime) {
+	void Unos(int polaznikID, const char * imePrezime) {
 		_polaznikID = polaznikID;
 		int size = strlen(imePrezime) + 1;
 		_imePrezime = new char[size];
@@ -66,18 +66,18 @@ struct Polaganja {
 	Kurs _kurs;
 	Datum _datumPolaganja;
 	float _ostvareniUspjeh;
-	void Unos(Polaznik p, Kurs k, Datum d, float uspjeh){
+	void Unos(Polaznik p, Kurs k, Datum d, float uspjeh) {
 		_polaznik.Unos(p._polaznikID, p._imePrezime);
 		_kurs.Unos(k._kurs, k._pocetak, k._kraj, k._imePredavaca);
 		_datumPolaganja.Unos(*d._dan, *d._mjesec, *d._godina);
 		_ostvareniUspjeh = uspjeh;
 	}
-	void Dealociraj(){
+	void Dealociraj() {
 		_polaznik.Dealociraj();
 		_kurs.Dealociraj();
 		_datumPolaganja.Dealociraj();
 	}
-	void Ispis(){
+	void Ispis() {
 		cout << "Polaznik -> ";
 		_polaznik.Ispis();
 		cout << "Kurs -> ";
@@ -93,7 +93,7 @@ struct SkillsCentar {
 	int _trenutnoKurseva;
 	Polaganja * _polaganja;
 	int _trenutnoPolaganja;
-	void Unos(char *ime_centra){
+	void Unos(const char *ime_centra) {
 		int size = strlen(ime_centra) + 1;
 		_nazivCentra = new char[size];
 		strcpy_s(_nazivCentra, size, ime_centra);
@@ -101,10 +101,10 @@ struct SkillsCentar {
 		_polaganja = nullptr;
 		_trenutnoPolaganja = 0;
 	}
-	int PretvoriUDane(Datum d){
+	int PretvoriUDane(Datum d) {
 		return *d._godina * 365 + *d._mjesec * 30 + *d._dan;
 	}
-	bool DodajKurs(Kurs k){
+	bool DodajKurs(Kurs k) {
 		for (int i = 0; i < _trenutnoKurseva; i++)
 		{
 			if (_kursevi[i]->_kurs == k._kurs && PretvoriUDane(_kursevi[i]->_kraj) > PretvoriUDane(k._pocetak))
@@ -114,11 +114,11 @@ struct SkillsCentar {
 		_kursevi[_trenutnoKurseva++]->Unos(k._kurs, k._pocetak, k._kraj, k._imePredavaca);
 		return true;
 	}
-	bool DodajPolaganje(Polaganja p){
+	bool DodajPolaganje(Polaganja p) {
 		bool moze_polagat = false;
 		for (size_t i = 0; i < _trenutnoKurseva; i++)
 		{
-			if (_kursevi[i]->_kurs == p._kurs._kurs && _kursevi[i]->_aktivan){
+			if (_kursevi[i]->_kurs == p._kurs._kurs && _kursevi[i]->_aktivan && (PretvoriUDane(p._datumPolaganja) - PretvoriUDane(_kursevi[i]->_kraj)) < 5) {
 				moze_polagat = true;
 				break;
 			}
@@ -143,14 +143,14 @@ struct SkillsCentar {
 		_trenutnoPolaganja++;
 		return true;
 	}
-	void Ispis(){
+	void Ispis() {
 		cout << "Naziv centra -> " << _nazivCentra << endl;
 		cout << "Kurseve koje nudi: ";
 		for (int i = 0; i < _trenutnoKurseva; i++)
 			_kursevi[i]->Ispis();
 
 	}
-	void Dealociraj(){
+	void Dealociraj() {
 		delete[] _nazivCentra; _nazivCentra = nullptr;
 		for (int i = 0; i < _trenutnoKurseva; i++)
 		{
@@ -160,7 +160,7 @@ struct SkillsCentar {
 			_polaganja[i].Dealociraj();
 		delete[] _polaganja; _polaganja = nullptr;
 	}
-	Polaganja *PolaganjaByDatum(Datum OD, Datum DO, int &broj_polaganja){
+	Polaganja *PolaganjaByDatum(Datum OD, Datum DO, int &broj_polaganja) {
 		broj_polaganja = 0;
 		Polaganja *niz_polaganja = new Polaganja[_trenutnoPolaganja];
 		for (size_t i = 0; i < _trenutnoPolaganja; i++)
@@ -170,17 +170,20 @@ struct SkillsCentar {
 				niz_polaganja[broj_polaganja++].Unos(_polaganja[i]._polaznik, _polaganja[i]._kurs, _polaganja[i]._datumPolaganja, _polaganja[i]._ostvareniUspjeh);
 			}
 		}
+		if (broj_polaganja == 0) return nullptr;
 		return niz_polaganja;
 	}
 };
-int PretragaRekurzivno(SkillsCentar centar, enumKursevi kurs, int brojac = 0){
-	if (centar._trenutnoPolaganja == brojac)
-		return 0;
+int PretragaRekurzivno(SkillsCentar centar, enumKursevi kurs, int brojac = 0, int suma = 0, int brojKurseva = 0) {
+	if (centar._trenutnoPolaganja == brojac) {
+		if (brojKurseva == 0) return 0;
+		return (float)suma / brojKurseva;
+	}
 	if (centar._polaganja[brojac]._kurs._kurs == kurs)
-		return centar._polaganja[brojac]._ostvareniUspjeh + PretragaRekurzivno(centar, kurs, brojac + 1);
-	return PretragaRekurzivno(centar, kurs, brojac + 1);
+		return PretragaRekurzivno(centar, kurs, brojac + 1, centar._polaganja[brojac]._ostvareniUspjeh + suma, brojKurseva + 1);
+	return PretragaRekurzivno(centar, kurs, brojac + 1, suma, brojKurseva);
 }
-void main(){
+void main() {
 
 	/*
 	1. BROJ I TIPOVI PARAMETARA MORAJU BITI IDENTICNI ONIMA U TESTNOM CODE-U (OSIM UKOLIKO IMATE OPRAVDANU POTREBU ZA MODIFIKACIJOM). U SUPROTNOM SE RAD NEĆE BODOVATI
@@ -249,9 +252,9 @@ void main(){
 	for (size_t i = 0; i < brojPolaganja; i++)
 		polaganjaByDatum[i].Ispis();
 
-	////PretragaRekurzivno - rekurzivna funkcija pronalazi prosjecni uspjeh koji su polaznici tokom godine (npr.2016) ostvarili na odredjenom kursu (npr. MasteringSQL)
+	//PretragaRekurzivno - rekurzivna funkcija pronalazi prosjecni uspjeh koji su polaznici tokom godine (npr.2016) ostvarili na odredjenom kursu (npr. MasteringSQL)
 	cout << "Prosjecan uspjeh na kursu MasteringSQL u 2016 godini je " << PretragaRekurzivno(mostar, MasteringSQL) << endl;
-	////Ispis - ispisuje sve informacije o edukacijskom centru. prije ispisa sortirati sve kurseve na osnovu pocetka odrzavanja kursa
+	//Ispis - ispisuje sve informacije o edukacijskom centru. prije ispisa sortirati sve kurseve na osnovu pocetka odrzavanja kursa
 	mostar.Ispis();
 
 	//izvrsiti potrebne dealokacije
