@@ -15,7 +15,7 @@ using namespace std;
 
 enum VrstaObaveze { Seminarski, Parcijalni1, Parcijalni2, Integralni, Prakticni };
 
-char *VrstaObavezeChar[] = { "Seminarski", "Parcijalni1", "Parcijalni2", "Integralni", "Prakticni" };
+const char *VrstaObavezeChar[] = { "Seminarski", "Parcijalni1", "Parcijalni2", "Integralni", "Prakticni" };
 
 struct Datum {
 	int * _dan, *_mjesec, *_godina;
@@ -29,7 +29,7 @@ struct Datum {
 	}
 	void Dealociraj() { delete _dan; delete _mjesec; delete _godina; }
 
-	int PretvoriUDane(){
+	int PretvoriUDane() {
 		return *_godina * 365 + *_mjesec * 30 + *_dan;
 	}
 };
@@ -38,7 +38,7 @@ struct ObavezeNaPredmetu {
 	Datum _datumIzvrsenja;
 	char * _napomena;
 	int _ocjena; // 5 - 10 
-	void Unos(VrstaObaveze vrsta, Datum datum, int ocjena, char * napomena) {
+	void Unos(VrstaObaveze vrsta, Datum datum, int ocjena, const char * napomena) {
 		_vrstaObaveze = make_shared<VrstaObaveze>(vrsta);
 		_datumIzvrsenja.Unos(*datum._dan, *datum._mjesec, *datum._godina);
 		_ocjena = ocjena;
@@ -56,7 +56,7 @@ struct ObavezeNaPredmetu {
 	}
 };
 
-char * _kljucneRijeci[15] = { NULL }; /*da bi se odredjena obaveza na predmetu smatrala uspjesno izvrsenom, u napomeni (objekta ObavezeNaPredmetu) ne smije stajati niti jedna od rijeci koja se nalazi u nizu _kljucneRijeci*/
+const char * _kljucneRijeci[15] = { NULL }; /*da bi se odredjena obaveza na predmetu smatrala uspjesno izvrsenom, u napomeni (objekta ObavezeNaPredmetu) ne smije stajati niti jedna od rijeci koja se nalazi u nizu _kljucneRijeci*/
 
 struct PolozeniPredmet {
 	Datum _datumPolaganja;//datum koji ce se evidentirati kao datum kada je predmet polozen tj. kada je formirana konacna ocjena
@@ -66,7 +66,7 @@ struct PolozeniPredmet {
 	int _minimalanBrojDana; //odnosi se na minimalan broj dana koji mora proci od izvrsenja pojedinih obaveza na predmetu (npr. 7 dana)
 	int _konacnaOcjena; //formira se na osnovu ocjena izvrsenih obaveza
 
-	void Unos(char * naziv, int minimalanBrojDana) {
+	void Unos(const char * naziv, int minimalanBrojDana) {
 		_nazivPredmeta = new char[strlen(naziv) + 1];
 		strcpy_s(_nazivPredmeta, strlen(naziv) + 1, naziv);
 		_listaIzvrsenihObaveza = nullptr;
@@ -82,25 +82,24 @@ struct PolozeniPredmet {
 		delete[]_listaIzvrsenihObaveza;
 		_listaIzvrsenihObaveza = nullptr;
 	}
-	bool DodajIzvrsenuObavezu(VrstaObaveze vrsta, Datum datum, int ocjena, char *napomena){
-		
+	bool DodajIzvrsenuObavezu(VrstaObaveze vrsta, Datum datum, int ocjena, const char *napomena) {
+
 		bool postoji_kljucna_rijec = false;
 
-		// provjera da li je izmedju posljednje izvrsene obaveze i trenutno koje dodajemo proslo minimalan broj dana
-		// provjera "_trenutnoIzvrsenihObaveza != 0" sluzi u slucaju da nemamo uneseni obaveza ne moze se ni provjeravati ( -> RE :) <- )
-		if (_trenutnoIzvrsenihObaveza != 0 && abs(datum.PretvoriUDane() - _listaIzvrsenihObaveza[_trenutnoIzvrsenihObaveza - 1]._datumIzvrsenja.PretvoriUDane()) < _minimalanBrojDana)
-			return false;
 		// provjera da li postoji vec ta obaveza i da li je ocjena veca 5
 		for (int i = 0; i < _trenutnoIzvrsenihObaveza; i++)
 		{
+			// provjera da li je izmedju posljednje izvrsene obaveze i trenutno koje dodajemo proslo minimalan broj dana
+			if (abs(datum.PretvoriUDane() - _listaIzvrsenihObaveza[i]._datumIzvrsenja.PretvoriUDane()) < _minimalanBrojDana)
+				return false;
 			// nadjena je ista obaveza
-			if (*_listaIzvrsenihObaveza[i]._vrstaObaveze == vrsta){
+			if (*_listaIzvrsenihObaveza[i]._vrstaObaveze == vrsta) {
 				// provjera da li je ocjena veca 5
 				if (_listaIzvrsenihObaveza[i]._ocjena > 5) return false; // ako jeste izbacujemo iz funkcije jer je dodavanje onemoguceno
-				// provjera da li postoji kljucna rijec u napomeni
+																		 // provjera da li postoji kljucna rijec u napomeni
 				for (int j = 0; j < 15; j++)
 				{
-					if (_kljucneRijeci[j] != nullptr && strstr(_listaIzvrsenihObaveza[i]._napomena, _kljucneRijeci[j]) != nullptr){
+					if (_kljucneRijeci[j] != nullptr && strstr(_listaIzvrsenihObaveza[i]._napomena, _kljucneRijeci[j]) != nullptr) {
 						postoji_kljucna_rijec = true;
 					}
 				}
@@ -124,8 +123,8 @@ struct PolozeniPredmet {
 		_trenutnoIzvrsenihObaveza++;
 		return true;
 	}
-	
-	int FormirajKonacnuOcjenu(){
+
+	int FormirajKonacnuOcjenu() {
 
 		bool integralni, parcijalni1, parcijalni2, prakticni;
 		integralni = parcijalni1 = parcijalni2 = prakticni = false;
@@ -141,12 +140,12 @@ struct PolozeniPredmet {
 			// provjera da li obaveza sadrzi neki kljucnu rijec
 			for (int j = 0; j < 15; j++)
 			{
-				if (_kljucneRijeci[j] != nullptr && strstr(_listaIzvrsenihObaveza[i]._napomena, _kljucneRijeci[j]) != nullptr){
+				if (_kljucneRijeci[j] != nullptr && strstr(_listaIzvrsenihObaveza[i]._napomena, _kljucneRijeci[j]) != nullptr) {
 					postoji_kljucna_rijec = true;
 				}
 			}
-			if (!postoji_kljucna_rijec){
-				if (*_listaIzvrsenihObaveza[i]._vrstaObaveze == Integralni && _listaIzvrsenihObaveza[i]._ocjena > 5){
+			if (!postoji_kljucna_rijec) {
+				if (*_listaIzvrsenihObaveza[i]._vrstaObaveze == Integralni && _listaIzvrsenihObaveza[i]._ocjena > 5) {
 					integralni = true;
 					suma_ocjena = _listaIzvrsenihObaveza[i]._ocjena;
 					break; // kako se konacna ocjena moze formirati samo na osnovu integralnog ispita mozemo prekinuti petlju jer nema potrebe vise ista provjeravati
@@ -163,11 +162,11 @@ struct PolozeniPredmet {
 					prakticni = true;
 					suma_ocjena += _listaIzvrsenihObaveza[i]._ocjena;
 				}
-				if (*_listaIzvrsenihObaveza[i]._vrstaObaveze == Seminarski && _listaIzvrsenihObaveza[i]._ocjena > 5){
+				if (*_listaIzvrsenihObaveza[i]._vrstaObaveze == Seminarski && _listaIzvrsenihObaveza[i]._ocjena > 5) {
 					seminarski++;
 					suma_ocjena += _listaIzvrsenihObaveza[i]._ocjena;
 				}
-				if (_listaIzvrsenihObaveza[i]._ocjena > najveca_ocjena && _listaIzvrsenihObaveza[i]._datumIzvrsenja.PretvoriUDane() > datum_ocjene.PretvoriUDane()){
+				if (_listaIzvrsenihObaveza[i]._ocjena > najveca_ocjena && _listaIzvrsenihObaveza[i]._datumIzvrsenja.PretvoriUDane() > datum_ocjene.PretvoriUDane()) {
 					datum_ocjene.Unos(*_listaIzvrsenihObaveza[i]._datumIzvrsenja._dan, *_listaIzvrsenihObaveza[i]._datumIzvrsenja._mjesec, *_listaIzvrsenihObaveza[i]._datumIzvrsenja._godina);
 				}
 			}
@@ -175,7 +174,8 @@ struct PolozeniPredmet {
 		// u slucaju da je polozeni predmet integralni mozemo formirati konacnu ocjenu
 		if (integralni) {
 			_konacnaOcjena = suma_ocjena;
-		} else  if (parcijalni1 && parcijalni2 && prakticni && seminarski >= 2){
+		}
+		else  if (parcijalni1 && parcijalni2 && prakticni && seminarski >= 2) {
 			_konacnaOcjena = (float)(suma_ocjena) / (3 + seminarski);
 		}
 		else {
@@ -187,14 +187,14 @@ struct PolozeniPredmet {
 		return _konacnaOcjena;
 	}
 };
-float PretragaRekurzivno(PolozeniPredmet polozeniPredmet, VrstaObaveze vrsta, Datum OD, Datum DO, int brojacObaveza, int prosjek, int brojacObavezaKojiUlazeUProsjek = 0){
-	if (brojacObaveza >= polozeniPredmet._trenutnoIzvrsenihObaveza){
+float PretragaRekurzivno(PolozeniPredmet polozeniPredmet, VrstaObaveze vrsta, Datum OD, Datum DO, int brojacObaveza, int prosjek, int brojacObavezaKojiUlazeUProsjek = 0) {
+	if (brojacObaveza >= polozeniPredmet._trenutnoIzvrsenihObaveza) {
 		return (float)prosjek / brojacObavezaKojiUlazeUProsjek;
 	}
 	// pronadjena je ta obaveza
-	if (*polozeniPredmet._listaIzvrsenihObaveza[brojacObaveza]._vrstaObaveze == vrsta){
+	if (*polozeniPredmet._listaIzvrsenihObaveza[brojacObaveza]._vrstaObaveze == vrsta) {
 		// provjeravamo da li je unutar zadanog okvira datuma
-		if (OD.PretvoriUDane() <= polozeniPredmet._listaIzvrsenihObaveza[brojacObaveza]._datumIzvrsenja.PretvoriUDane() && DO.PretvoriUDane() >= polozeniPredmet._listaIzvrsenihObaveza[brojacObaveza]._datumIzvrsenja.PretvoriUDane()){
+		if (OD.PretvoriUDane() <= polozeniPredmet._listaIzvrsenihObaveza[brojacObaveza]._datumIzvrsenja.PretvoriUDane() && DO.PretvoriUDane() >= polozeniPredmet._listaIzvrsenihObaveza[brojacObaveza]._datumIzvrsenja.PretvoriUDane()) {
 			// pozivamo ponovo funkciju povemo brojac obaveza i prosljedjujemo prosjek uvecan za ocjenu ove obaveze i uvecamo brojac obaveza koji ulaze u prosjek tj da znamo koliko ima obaveza koje trazimo
 			return PretragaRekurzivno(polozeniPredmet, vrsta, OD, DO, brojacObaveza + 1, prosjek + polozeniPredmet._listaIzvrsenihObaveza[brojacObaveza]._ocjena, brojacObavezaKojiUlazeUProsjek + 1);
 		}
@@ -202,13 +202,13 @@ float PretragaRekurzivno(PolozeniPredmet polozeniPredmet, VrstaObaveze vrsta, Da
 	// u slucaju da nije ta obaveza samo povecamo brojac obaveza za provjeru iduce obveze
 	return PretragaRekurzivno(polozeniPredmet, vrsta, OD, DO, brojacObaveza + 1, prosjek, brojacObavezaKojiUlazeUProsjek);
 }
-int GetBrojObavezaIznadProsjeka(PolozeniPredmet polozeniPredmet, float prosjecnaOcjena){
-	
-	auto broj_obaveza_iznad_prosjeka = [polozeniPredmet, prosjecnaOcjena](){
+int GetBrojObavezaIznadProsjeka(PolozeniPredmet polozeniPredmet, float prosjecnaOcjena) {
+
+	auto broj_obaveza_iznad_prosjeka = [polozeniPredmet, prosjecnaOcjena]() {
 		int brojac = 0;
 		for (int i = 0; i < polozeniPredmet._trenutnoIzvrsenihObaveza; i++)
 		{
-			if (polozeniPredmet._listaIzvrsenihObaveza[i]._ocjena >= prosjecnaOcjena){
+			if (polozeniPredmet._listaIzvrsenihObaveza[i]._ocjena >= prosjecnaOcjena) {
 				brojac++;
 			}
 		}
