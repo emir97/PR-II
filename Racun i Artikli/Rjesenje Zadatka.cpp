@@ -198,7 +198,7 @@ void main() {
 	racun.Ispis();
 	Artikal * p1 = racun.BinarnaPretraga("Cokolada");
 	cout << "Binarnom pretragom pronadjen artikal -> ";
-	//p1->Ispis();
+	p1->Ispis();
 	racun.Ispis();
 	Artikal * p2 = PronadjiNajskupljiArtikal(racun._artikli, racun._brojArtikala, &racun._artikli[0]);
 	cout << "Rekurzivno pronadjen najskuplji artikal -> ";
@@ -210,4 +210,6 @@ void main() {
 	cokolada.Dealociraj();
 	sok.Dealociraj();
 	racun.Dealociraj();
+
+	system("pause");
 }
