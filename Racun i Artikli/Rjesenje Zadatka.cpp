@@ -3,7 +3,7 @@
 using namespace std;
 
 
-char * crt = "\n----------------------------------------------------\n";
+const char * crt = "\n----------------------------------------------------\n";
 char generisanje[10] = "080658999";
 struct Datum {
 	int * _dan, *_mjesec, *_godina;
@@ -21,7 +21,7 @@ struct Datum {
 struct Artikal {
 	char * _naziv;
 	float _cijena;
-	void Unos(char * naziv, float cijena) {
+	void Unos(const char * naziv, float cijena) {
 		int vel = strlen(naziv) + 1;
 		_naziv = new char[vel];
 		strcpy_s(_naziv, vel, naziv);
@@ -40,14 +40,14 @@ struct Racun {
 	int _brojArtikala;
 	//Potpisi funkcija trebaju odgovarati onima u main-u
 	//1. Unos
-	void Unos(char *_brojRacuna, Datum datum){
+	void Unos(const char *_brojRacuna, Datum datum) {
 		strcpy_s(this->_brojRacuna, 10, _brojRacuna);
 		_datumKreiranja.Unos(*datum._dan, *datum._mjesec, *datum._godina);
 		_artikli = nullptr;
 		_brojArtikala = 0;
 	}
 	//2. Dealociraj
-	void Dealociraj(){
+	void Dealociraj() {
 		_datumKreiranja.Dealociraj();
 		for (int i = 0; i < _brojArtikala; i++)
 			_artikli[i].Dealociraj();
@@ -57,17 +57,17 @@ struct Racun {
 	//3. DodajArtikal - dodaje novi artikal u listu artikala zajedno sa njegovom kolicinom. 
 	//Onemoguciti ponavljanje artikala na nacin da se uvecava samo kolicina ukoliko
 	//	korisnik vise puta pokusa dodati isti artikal.
-	void DodajArtikal(Artikal a, float kolicina){
+	void DodajArtikal(Artikal a, float kolicina) {
 		for (int i = 0; i < _brojArtikala; i++)
 		{
-			if (strcmp(_artikli[i]._naziv, a._naziv) == 0){
+			if (strcmp(_artikli[i]._naziv, a._naziv) == 0) {
 				_kolicine[i] = _kolicine[i] + kolicina;
 				return;
 			}
 		}
 		Artikal *temp = new Artikal[_brojArtikala + 1];
 		int *temp_kolicina = new int[_brojArtikala + 1];
-		for (int i = 0; i < _brojArtikala; i++){
+		for (int i = 0; i < _brojArtikala; i++) {
 			temp[i].Unos(_artikli[i]._naziv, _artikli[i]._cijena);
 			temp_kolicina[i] = _kolicine[i];
 		}
@@ -77,7 +77,7 @@ struct Racun {
 
 		for (int i = 0; i < _brojArtikala; i++)
 			_artikli[i].Dealociraj();
-		if (_artikli != nullptr && _kolicine != nullptr){
+		if (_artikli != nullptr && _kolicine != nullptr) {
 			delete[] _artikli;
 			delete[] _kolicine;
 		}
@@ -86,16 +86,16 @@ struct Racun {
 		_brojArtikala++;
 
 	}
-		//4. Ispis - ispisuje racun u formatu prikazanom na slici (nije obavezno da bude 
+	//4. Ispis - ispisuje racun u formatu prikazanom na slici (nije obavezno da bude 
 	//	identican, ali je svakako pozeljno). Prilikom svakog ispisa, racun
 	//	je potrebno spasiti u tekstualni fajl sa istim nazivom kao i broj racuna.
-	void Ispis(){
+	void Ispis() {
 		char naziv_fajla[14];
 		strcpy_s(naziv_fajla, 14, _brojRacuna);
 		strcat_s(naziv_fajla, 14, ".txt");
 		ofstream upis_u_fajl(naziv_fajla);
-		
-		cout << "Broj Racuna -> " << _brojRacuna<<crt;
+
+		cout << "Broj Racuna -> " << _brojRacuna << crt;
 		cout << "Datum racuna -> ";
 		_datumKreiranja.Ispis();
 		cout << crt;
@@ -103,32 +103,59 @@ struct Racun {
 		for (int i = 0; i < _brojArtikala; i++)
 		{
 			_artikli[i].Ispis();
-			cout << "Kolicina -> " << _kolicine[i]<<endl;
+			cout << "Kolicina -> " << _kolicine[i] << endl;
 			cout << crt;
 		}
 
-		if (!upis_u_fajl.fail()){
-			upis_u_fajl << "Broj racuna -> " << _brojRacuna <<crt;
-			upis_u_fajl << "Datum racuna -> " << *_datumKreiranja._dan << "/" << *_datumKreiranja._mjesec << "/" << *_datumKreiranja._godina<<crt;
+		if (!upis_u_fajl.fail()) {
+			upis_u_fajl << "Broj racuna -> " << _brojRacuna << crt;
+			upis_u_fajl << "Datum racuna -> " << *_datumKreiranja._dan << "/" << *_datumKreiranja._mjesec << "/" << *_datumKreiranja._godina << crt;
 			for (int i = 0; i < _brojArtikala; i++)
 			{
-				upis_u_fajl << _artikli[i]._naziv << " " << _artikli[i]._cijena << " KM"<<endl;
+				upis_u_fajl << _artikli[i]._naziv << " " << _artikli[i]._cijena << " KM" << endl;
 				upis_u_fajl << "Kolicina -> " << _kolicine[i];
 				upis_u_fajl << crt;
-				
+
 			}
 			upis_u_fajl.close();
 		}
-		
+
 	}
-		//5. BinarnaPretraga - koristeci binarnu pretragu, na osnovu naziva, pronalazi i vraca 
+	//5. BinarnaPretraga - koristeci binarnu pretragu, na osnovu naziva, pronalazi i vraca 
 	//	pokazivac na artikal. Ukoliko trazeni artikal ne postoji funkcija vraca nullptr.
-	Artikal *BinarnaPretraga(char *naziv){
-		
+	Artikal *BinarnaPretraga(const char *naziv) {
+		bool prolaz = false;
+		do {
+			prolaz = false;
+			for (size_t i = 0; i < _brojArtikala - 1; i++)
+			{
+				if (strcmp(_artikli[i]._naziv, _artikli[i + 1]._naziv) > 0) {
+					Artikal temp = _artikli[i];
+					_artikli[i] = _artikli[i + 1];
+					_artikli[i + 1] = temp;
+					prolaz = true;
+				}
+			}
+		} while (prolaz);
+
+		// Binarna pretraga
+		int prvi = 0;
+		int zadnji = _brojArtikala;
+		int sredina = 0;
+		while (prvi <= zadnji) {
+			sredina = (prvi + zadnji) / 2;
+			if (strcmp(_artikli[sredina]._naziv, naziv) == 0)
+				return &_artikli[sredina];
+			else if (strcmp(_artikli[sredina]._naziv, naziv) < 0)
+				prvi = sredina + 1;
+			else
+				zadnji = sredina - 1;
+		}
+		return nullptr;
 	}
 };
 //1. PronadjiNajskupljiArtikal - rekurzivna funkcija koja vraca pokazivac na artikal sa najvecom ukupnom cijenom (cijena*kolicina)
-Artikal *PronadjiNajskupljiArtikal(Artikal *artikli, int broj_artikala, Artikal *najskuplji){
+Artikal *PronadjiNajskupljiArtikal(Artikal *artikli, int broj_artikala, Artikal *najskuplji) {
 	if (broj_artikala - 1 < 0)
 		return najskuplji;
 	if (artikli[broj_artikala - 1]._cijena > najskuplji->_cijena)
@@ -137,23 +164,21 @@ Artikal *PronadjiNajskupljiArtikal(Artikal *artikli, int broj_artikala, Artikal 
 }
 //2. GenerisiSljedeciBrojRacuna - generise i vraca naredni broj racuna
 #pragma warning (disable:4996)
-char *GenerisiSljedeciBrojRacuna(){
-
-	
+char *GenerisiSljedeciBrojRacuna() {
 	for (int i = 8; i >= 0; i--)
 	{
-			int temp;
-			char temp_chr = generisanje[i];
-			temp = atoi(&temp_chr);
-			++temp;
-			if (temp<10){
-				char temp_chr[2];
-				_itoa(temp, &temp_chr[0], 10);
-				generisanje[i] = temp_chr[0];
-				break;
-			}
-			generisanje[i] = '0';
-			
+		int temp;
+		char temp_chr = generisanje[i];
+		temp = atoi(&temp_chr);
+		++temp;
+		if (temp<10) {
+			char temp_chr[2];
+			_itoa(temp, &temp_chr[0], 10);
+			generisanje[i] = temp_chr[0];
+			break;
+		}
+		generisanje[i] = '0';
+
 	}
 	return generisanje;
 }
