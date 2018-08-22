@@ -129,7 +129,7 @@ struct EdukacijskiCentar {
 	bool DodajKurs(Kurs k) {
 		for (size_t i = 0; i < _trenutnoKurseva; i++)
 		{
-			if (_kursevi[i]->_kraj->GetDani() > k._pocetak->GetDani())
+			if (_kursevi[i]->_kraj->GetDani() > k._pocetak->GetDani() && _kursevi[i]->_predmet == k._predmet && _kursevi[i]->_razredi == k._razredi)
 				return false;
 		}
 		_kursevi[_trenutnoKurseva] = new Kurs;
