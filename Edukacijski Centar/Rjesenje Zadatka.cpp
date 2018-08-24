@@ -138,6 +138,7 @@ struct EdukacijskiCentar {
 	}
 
 	bool DodajPolaganje(Polaganja p) {
+		if (p._ocjena < 0 || p._ocjena > 5) return false;
 		bool postojiKurs = false;
 		for (size_t i = 0; i < _trenutnoKurseva; i++)
 		{
