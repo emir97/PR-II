@@ -12,14 +12,14 @@ using namespace std;
 //narednu liniju code-a ignorisite, osim u slucaju da vam bude predstavljala smetnje u radu
 #pragma warning(disable:4996)
 
-const char *crt = "\n-------------------------------------------\n";
+const char* crt = "\n-------------------------------------------\n";
 
 enum eNacinStudiranja { REDOVAN, DL };
 enum eRazred { PRVI = 1, DRUGI, TRECI, CETVRTI };
 
 
 struct DatumVrijeme {
-	int *_dan, *_mjesec, *_godina, *_sati, *_minuti;
+	int* _dan, * _mjesec, * _godina, * _sati, * _minuti;
 	void Unos(int dan = 1, int mjesec = 1, int godina = 2000, int sati = 0, int minuti = 0) {
 		_dan = new int(dan);
 		_mjesec = new int(mjesec);
@@ -38,7 +38,7 @@ struct DatumVrijeme {
 		cout << *_dan << "." << *_mjesec << "." << *_godina << " " << *_sati << ":" << *_minuti << endl;
 	}
 
-	char *GetDatumKaoNizKaraktera() {
+	char* GetDatumKaoNizKaraktera() {
 		char dan[3], mjesec[3], godina[5], sati[3], minuti[3];
 		_itoa(*_dan, dan, 10);
 		_itoa(*_mjesec, mjesec, 10);
@@ -47,7 +47,7 @@ struct DatumVrijeme {
 		_itoa(*_minuti, minuti, 10);
 
 		int size = strlen(dan) + strlen(mjesec) + strlen(godina) + strlen(sati) + strlen(minuti) + 6;
-		char *char_datum = new char[size];
+		char* char_datum = new char[size];
 
 		strcpy_s(char_datum, size, dan);
 		strcat_s(char_datum, size, ".");
@@ -61,16 +61,20 @@ struct DatumVrijeme {
 
 		return char_datum;
 	}
+
+	long int GetMinute() {
+		return *_minuti + *_sati * 60 + *_dan * 24 * 60 + *_mjesec * 30 * 24 * 60 + *_godina * 365 * 24 * 60;
+	}
 };
 
-const DatumVrijeme rokZaPrijavu = { new int(5), new int(7), new int(2017), new int(12), new int(30) };
+DatumVrijeme rokZaPrijavu = { new int(5), new int(7), new int(2017), new int(12), new int(30) };
 
 
 struct Predmet {
-	char * _naziv;
+	char* _naziv;
 	int _ocjena;
-	DatumVrijeme * _datumUnosa;
-	void Unos(const char * naziv, int ocjena, DatumVrijeme datumUnosa) {
+	DatumVrijeme* _datumUnosa;
+	void Unos(const char* naziv, int ocjena, DatumVrijeme datumUnosa) {
 		int vel = strlen(naziv) + 1;
 		_naziv = new char[vel];
 		strcpy_s(_naziv, vel, naziv);
@@ -91,7 +95,7 @@ struct Predmet {
 
 struct Uspjeh {
 	eRazred _razred;
-	Predmet * _predmeti;
+	Predmet* _predmeti;
 	int _brojPredmeta;
 	void Unos(eRazred razred) {
 		_razred = razred;
@@ -110,7 +114,7 @@ struct Uspjeh {
 			_predmeti[i].Ispis();
 	}
 	void DodajPredmet(Predmet p) {
-		Predmet *temp = new Predmet[_brojPredmeta + 1];
+		Predmet* temp = new Predmet[_brojPredmeta + 1];
 		for (size_t i = 0; i < _brojPredmeta; i++)
 		{
 			temp[i].Unos(_predmeti[i]._naziv, _predmeti[i]._ocjena, *_predmeti[i]._datumUnosa);
@@ -124,16 +128,12 @@ struct Uspjeh {
 	}
 };
 
-int PretvoriUDane(DatumVrijeme d) {
-	return *d._dan + *d._mjesec * 30 + *d._godina * 365;
-}
-
 struct Kandidat {
 	eNacinStudiranja _nacinStudiranja;
-	char * _imePrezime;
+	char* _imePrezime;
 	shared_ptr<Uspjeh> _uspjeh[4];
 
-	void Unos(eNacinStudiranja nacinStudiranja, const char * imePrezime) {
+	void Unos(eNacinStudiranja nacinStudiranja, const char* imePrezime) {
 		int vel = strlen(imePrezime) + 1;
 		_imePrezime = new char[vel];
 		strcpy_s(_imePrezime, vel, imePrezime);
@@ -156,17 +156,15 @@ struct Kandidat {
 	bool DodajPredmet(eRazred razred, Predmet p) {
 		if (razred != PRVI && razred != DRUGI && razred != TRECI && razred != CETVRTI)
 			return false;
-		for (size_t i = 0; i < 4; i++)
-		{
-			if (_uspjeh[i] != nullptr) {
-				for (size_t j = 0; j < _uspjeh[i]->_brojPredmeta; j++)
-				{
-					if (strcmp(_uspjeh[i]->_predmeti[j]._naziv, p._naziv) == 0)
-						return false;
-				}
+
+		if (_uspjeh[(int)razred - 1] != nullptr) {
+			for (size_t i = 0; i < _uspjeh[(int)razred - 1]->_brojPredmeta; i++)
+			{
+				if (strcmp(_uspjeh[(int)razred - 1]->_predmeti[i]._naziv, p._naziv) == 0)
+					return false;
 			}
 		}
-		if (PretvoriUDane(rokZaPrijavu) <= PretvoriUDane(*p._datumUnosa))
+		if (rokZaPrijavu.GetMinute() <= p._datumUnosa->GetMinute())
 			return false;
 		if (_uspjeh[(int)razred - 1] == nullptr) {
 			_uspjeh[(int)razred - 1] = make_shared<Uspjeh>();
@@ -178,25 +176,33 @@ struct Kandidat {
 };
 
 
-Kandidat *rekNajboljaOcjena(Kandidat *kandidati, int broj_kandidata, const char *predmet, Kandidat *najbolja_ocjena = nullptr, int ocjena = 0, DatumVrijeme datumEvidentiranja = { new int(0), new int(0), new int(0), new int(0), new int(0) }) {
+Kandidat* rekNajboljaOcjena(Kandidat* kandidati, int broj_kandidata, const char* predmet, Kandidat* najbolja_ocjena = nullptr, int ocjena = 0, DatumVrijeme datumEvidentiranja = { new int(0), new int(0), new int(0), new int(0), new int(0) }) {
 	if (broj_kandidata <= 0)
 		return najbolja_ocjena;
 	if (najbolja_ocjena == nullptr)
 		return rekNajboljaOcjena(kandidati, broj_kandidata, predmet, &kandidati[broj_kandidata - 1]);
+	int tempOcjena = 0;
+	DatumVrijeme datumEvidencijeTemp = { new int(0), new int(0), new int(0), new int(0), new int(0) };
 	for (size_t i = 0; i < 4; i++)
 	{
 		if (kandidati[broj_kandidata - 1]._uspjeh[i] != nullptr) {
 			for (size_t j = 0; j < kandidati[broj_kandidata - 1]._uspjeh[i]->_brojPredmeta; j++)
 			{
-				if (strcmp(kandidati[broj_kandidata - 1]._uspjeh[i]->_predmeti[j]._naziv, predmet) == 0 && kandidati[broj_kandidata - 1]._uspjeh[i]->_predmeti[j]._ocjena > ocjena) {
-					return rekNajboljaOcjena(kandidati, broj_kandidata - 1, predmet, &kandidati[broj_kandidata - 1], kandidati[broj_kandidata - 1]._uspjeh[i]->_predmeti[j]._ocjena, *kandidati[broj_kandidata - 1]._uspjeh[i]->_predmeti[j]._datumUnosa);
+				if (strcmp(kandidati[broj_kandidata - 1]._uspjeh[i]->_predmeti[j]._naziv, predmet) == 0 && kandidati[broj_kandidata - 1]._uspjeh[i]->_predmeti[j]._ocjena > tempOcjena) {
+					tempOcjena = kandidati[broj_kandidata - 1]._uspjeh[i]->_predmeti[j]._ocjena;
+					datumEvidencijeTemp = *kandidati[broj_kandidata - 1]._uspjeh[i]->_predmeti[j]._datumUnosa;
 				}
-				if (strcmp(kandidati[broj_kandidata - 1]._uspjeh[i]->_predmeti[j]._naziv, predmet) == 0 && kandidati[broj_kandidata - 1]._uspjeh[i]->_predmeti[j]._ocjena == ocjena && PretvoriUDane(datumEvidentiranja) > PretvoriUDane(*kandidati[broj_kandidata - 1]._uspjeh[i]->_predmeti[j]._datumUnosa)) {
-					return rekNajboljaOcjena(kandidati, broj_kandidata - 1, predmet, &kandidati[broj_kandidata - 1], kandidati[broj_kandidata - 1]._uspjeh[i]->_predmeti[j]._ocjena, *kandidati[broj_kandidata - 1]._uspjeh[i]->_predmeti[j]._datumUnosa);
+				if (strcmp(kandidati[broj_kandidata - 1]._uspjeh[i]->_predmeti[j]._naziv, predmet) == 0 && kandidati[broj_kandidata - 1]._uspjeh[i]->_predmeti[j]._ocjena == tempOcjena && datumEvidencijeTemp.GetMinute() > kandidati[broj_kandidata - 1]._uspjeh[i]->_predmeti[j]._datumUnosa->GetMinute()) {
+					tempOcjena = kandidati[broj_kandidata - 1]._uspjeh[i]->_predmeti[j]._ocjena;
+					datumEvidencijeTemp = *kandidati[broj_kandidata - 1]._uspjeh[i]->_predmeti[j]._datumUnosa;
 				}
 			}
 		}
 	}
+	if (tempOcjena > ocjena)
+		return rekNajboljaOcjena(kandidati, broj_kandidata - 1, predmet, &kandidati[broj_kandidata - 1], tempOcjena, datumEvidencijeTemp);
+	else if (tempOcjena == ocjena && datumEvidencijeTemp.GetMinute() < datumEvidentiranja.GetMinute())
+		return rekNajboljaOcjena(kandidati, broj_kandidata - 1, predmet, &kandidati[broj_kandidata - 1], tempOcjena, datumEvidencijeTemp);
 	return rekNajboljaOcjena(kandidati, broj_kandidata - 1, predmet, najbolja_ocjena, ocjena, datumEvidentiranja);
 }
 
@@ -219,7 +225,7 @@ void main()
 
 	int brojKandidata = 2;
 
-	Kandidat * prijave2017 = new Kandidat[brojKandidata];
+	Kandidat* prijave2017 = new Kandidat[brojKandidata];
 	prijave2017[0].Unos(DL, "Jasmin Azemovic");
 	prijave2017[1].Unos(REDOVAN, "Indira Hamulic");
 
@@ -284,7 +290,7 @@ void main()
 	/*
 	napisati rekurzivnu funkciju koja ce vratiti pokazivac na kandidata sa najvecom ocjenom na predmetu koji je proslijedjen kao parametar. ukoliko je vise kandidata ostvarilo istu ocjenu, funkcija treba da vrati onog kandidata koji je prvi evidentirao tu ocjenu (ako je isto vrijeme evidentiranja, onda funkcija vraca kandidata koji je prvi u nizu).	u slucaju da niti jedan kandidat nije evidentirao trazeni predmet funkcija vraca nullptr. u nastavku je prikazan primjer poziva rekurzivne funkcije, a ostale parametre dodajte po potrebi.
 	*/
-	Kandidat * kandidatSaNajboljomOcjenom = rekNajboljaOcjena(prijave2017, brojKandidata, "Matematika");
+	Kandidat* kandidatSaNajboljomOcjenom = rekNajboljaOcjena(prijave2017, brojKandidata, "Matematika");
 	cout << "Kandidat -> ";
 	kandidatSaNajboljomOcjenom->Ispis();
 
